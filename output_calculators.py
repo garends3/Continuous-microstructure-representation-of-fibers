@@ -2,9 +2,8 @@ from functools import partial
 from typing import Protocol, Any
 from torch import Tensor
 
-from diffusion_calculator import SignalFromCoefficients, SignalMultishell, SignalSM, GradCorSM
-from datasets import DatasetCoord3D, MultiShellDataset
-
+from diffusion_calculator import SignalSM, GradCorSM
+from datasets import StandardModelDataset, GradCorSMDataset
 import numpy as np
 
 
@@ -24,7 +23,7 @@ class CoeffDiff:
 
 
 def create_sm_calculator(
-    cfg: dict, dataset: MultiShellDataset, device: str, numerical: bool = False, **kwargs
+    cfg: dict, dataset: StandardModelDataset, device: str, numerical: bool = False, **kwargs
 ) -> CoeffDiff:
     diff_calculator = SignalSM(
         cfg["train_cfg"]["lmax"],
@@ -37,7 +36,7 @@ def create_sm_calculator(
     return CoeffDiff(diff_calculator)
 
 def create_grad_cor(
-    cfg: dict, dataset: MultiShellDataset, device: str, numerical: bool = False, **kwargs
+    cfg: dict, dataset: GradCorSMDataset, device: str, numerical: bool = False, **kwargs
 ) -> CoeffDiff:
     diff_calculator = GradCorSM(
         cfg["train_cfg"]["lmax"],
