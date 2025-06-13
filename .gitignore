@@ -4,6 +4,7 @@ notebooks/
 wandb/
 paper_output/
 .idea/
+**/.DS_store
 smi.py
 smi_check.py
 *.sh
