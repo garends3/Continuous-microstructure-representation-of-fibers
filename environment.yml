@@ -1,0 +1,21 @@
+name: standard_model_inr
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - cython
+  - ca-certificates
+  - openssl
+  - numpy
+  - pytorch
+  - torchvision
+  - torchaudio
+  - certifi
+  - nibabel
+  - ipympl
+  - wandb
+  - dipy
+  - black
+  - pytest
+  - scipy
+  - torchquad
