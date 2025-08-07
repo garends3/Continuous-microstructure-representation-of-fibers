@@ -1,5 +1,7 @@
 # Standard model INR
-Code base used in: pre-print here
+Code base used in: 
+Hendriks, Tom, et al. "Implicit neural representations for accurate estimation of the standard model of white matter." arXiv preprint arXiv:2506.15762 (2025).
+https://arxiv.org/abs/2506.15762
 
 To create an appropriate environment use the environment.yml file with conda.
 
