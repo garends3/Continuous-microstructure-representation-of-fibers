@@ -33,33 +33,6 @@ def create_y_mat(thetas: np.ndarray, phis: np.ndarray, l_max: int) -> torch.Tens
     return y_mat
 
 
-def create_y_mat_gc(thetas: np.ndarray, phis: np.ndarray, l_max: int) -> torch.Tensor:
-    # Get the shape of input arrays
-    n_dir = thetas.shape[1]  # Now thetas and phis have shape (i, j, k, N, 1)
-    n = (l_max + 1) * (l_max + 2) // 2
-
-    # Initialize the output matrix (n_dir is now N)
-    y_mat = torch.zeros((thetas.shape[0], n_dir, n))
-
-    # Loop over l and m for spherical harmonics
-    for l in range(0, l_max + 1, 2):  # Only even l
-        for m in range(-l, l + 1):  # m ranges from -l to l
-            coef_idx = (l**2 + l) // 2 + m
-
-
-            # Compute spherical harmonics for each (i, j, k, N) point
-            Y = sph_harm(np.abs(m), l, thetas, phis)
-
-            # Assign values to the matrix
-            if m < 0:
-                y_mat[..., coef_idx] = torch.tensor(Y.imag * np.sqrt(2))
-            elif m > 0:
-                y_mat[..., coef_idx] = torch.tensor(Y.real * np.sqrt(2))
-            else:  # m == 0
-                y_mat[..., coef_idx] = torch.tensor(Y.real)
-
-    return y_mat
-
 
 def get_rescale_value(l_max: int, rescale: bool = True) -> torch.Tensor:
     rescale_value = (
@@ -154,59 +127,3 @@ class SignalSM:
         )
 
 
-class GradCorSM:
-    def __init__(
-            self,
-            l_max: int,
-            device: str = "cpu",
-            numerical: bool = False,
-    ):
-        self.l_max = l_max
-        self.device = device
-
-        sphere = get_sphere("repulsion200")  # 100, 200, 724
-        sph_sphere_vecs = cartesian_to_spherical(sphere.vertices)
-        sphere_thetas = sph_sphere_vecs[:, 2]
-        sphere_phis = sph_sphere_vecs[:, 1]
-        self.sphere_y_mat = create_y_mat(sphere_thetas, sphere_phis, l_max).to(device)
-        self.numerical = numerical
-
-
-    def compute_signal_from_coeff(self, coeffs: torch.tensor, bvector: torch.tensor, bvals: torch.tensor,
-                                  bdelta: torch.tensor):
-        fod_coeffs = coeffs[:, :-5]
-        if self.numerical:
-            kernel_method = gradcor_num_StandardWM.K2comp_fast
-        else:
-            raise Exception("analytical solution not implemented for gradient correction")
-
-        kernel = kernel_method(
-            self.l_max,
-            bvals.to(self.device),
-            bdelta.to(self.device),
-            S0=coeffs[:, [-1]],
-            Di=coeffs[:, [-5]],
-            De=coeffs[:, [-3]],
-            Dp=coeffs[:, [-2]],
-            f=coeffs[:, [-4]],
-        )
-
-        conv_vec = create_conv_vec(self.l_max, kernel).to(self.device)
-        sph_bvec = cartesian_to_spherical(bvector)
-
-        sample_phis = sph_bvec[..., 1]
-        sample_thetas = sph_bvec[..., 2]
-        y_mat = create_y_mat_gc(sample_thetas, sample_phis, self.l_max).to(self.device)
-
-        fod_signal = torch.einsum(
-            "bk, bdk, bdk -> bd", fod_coeffs, conv_vec, y_mat
-        )
-
-        return fod_signal
-
-
-    def compute_negative_signal(self, coeffs: torch.Tensor, **kwargs):
-        fod_coeffs = coeffs[:, :-5]
-        return torch.clamp(
-            torch.einsum("bk, dk -> bd", fod_coeffs, self.sphere_y_mat), max=0
-        )
