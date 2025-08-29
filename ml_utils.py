@@ -11,6 +11,7 @@ from pathlib import Path
 from output_calculators import OutputCalculator
 from datasets import create_input_space, create_input_space_prop
 from dataclasses import dataclass
+from dipy.data import get_sphere
 
 
 @dataclass
@@ -39,6 +40,10 @@ class Trainer:
     def train(self) -> dict[str, Any]:
         # torch.autograd.set_detect_anomaly(True)
 
+        sphere = get_sphere('repulsion100')
+        input_dirs = sphere.vertices[sphere.vertices[:,2]>=0]
+        input_dirs = torch.tensor(input_dirs, device=self.device)
+
         avg_loss = []
         t = 0
         best_loss = float("inf")
@@ -54,11 +59,15 @@ class Trainer:
             for i, (_input, labels, kwargs) in enumerate(tqdm(self.dataloader)):
                 self.model.train()
                 _input = _input.to(self.device)
+                inputs = torch.zeros(_input.shape[0], input_dirs.shape[0], 6)
+                inputs[..., :3] = _input[:, None, :]
+                inputs[..., 3:] = input_dirs[None, :, :]
+                inputs = inputs.reshape(-1, 6)
 
                 labels = labels.to(self.device)
                 self.optimizer.zero_grad()
 
-                model_out = self.model(_input)
+                model_out = self.model(inputs)
 
                 output, *res = self.output_calculator.output_from_model_out(model_out, fiber_direction **kwargs)
                 loss = self.loss_fn(output, labels, *res)
