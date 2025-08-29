@@ -15,8 +15,8 @@ class Signal_Zeppelin:
         bvals: np.ndarray,
         cart_bvec: np.ndarray,
         bdelta: np.ndarray,
-        sph_bvec: np.ndarray = None,
         fiber_direction: np.ndarray,
+        sph_bvec: np.ndarray = None,
         device: str = "cpu",
     ):
         self.device = device
@@ -27,9 +27,6 @@ class Signal_Zeppelin:
         if cart_bvec is not None:
             self.cart_bvec = cart_bvec
             self.sph_bvec = cartesian_to_spherical(cart_bvec)
-
-
-
 
 
     def compute_signal_from_coeff(self, coeffs: torch.tensor):
