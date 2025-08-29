@@ -2,8 +2,8 @@ from functools import partial
 from typing import Protocol, Any
 from torch import Tensor
 
-from diffusion_calculator import SignalSM, GradCorSM
-from datasets import StandardModelDataset, GradCorSMDataset
+from diffusion_calculator import Signal_Zeppelin
+from datasets import ZeppelinModelDataset
 import numpy as np
 
 
@@ -18,38 +18,24 @@ class CoeffDiff:
 
     def output_from_model_out(self, model_out: Any, **kwargs) -> tuple[Tensor, Tensor, Tensor]:
         diff_signal = self.diff_calculator.compute_signal_from_coeff(model_out, **kwargs)
-        neg_signal = self.diff_calculator.compute_negative_signal(model_out, **kwargs)
-        return diff_signal, model_out, neg_signal
+        return diff_signal, model_out
 
 
-def create_sm_calculator(
-    cfg: dict, dataset: StandardModelDataset, device: str, numerical: bool = False, **kwargs
+def create_zeppelin_calculator(
+    cfg: dict, dataset: ZeppelinModelDataset, device: str, **kwargs
 ) -> CoeffDiff:
-    diff_calculator = SignalSM(
-        cfg["train_cfg"]["lmax"],
+    diff_calculator = Signal_Zeppelin(
         dataset.get_bvals(),
         dataset.get_directions(),
         dataset.get_bdelta(),
-        device=device,
-        numerical=numerical
+        dataset.get_fiberdirection(),
+        device=device
     )
     return CoeffDiff(diff_calculator)
 
-def create_grad_cor(
-    cfg: dict, dataset: GradCorSMDataset, device: str, numerical: bool = False, **kwargs
-) -> CoeffDiff:
-    diff_calculator = GradCorSM(
-        cfg["train_cfg"]["lmax"],
-        device=device,
-        numerical=numerical,
-    )
-    return CoeffDiff(diff_calculator)
 
 OUTPUT_CALCULATORS = {
-    "standard_model": partial(create_sm_calculator, numerical=False),
-    "standard_model_num": partial(create_sm_calculator, numerical=True),
-    "grad_cor": partial(create_grad_cor, numerical=False),
-    "grad_cor_num": partial(create_grad_cor, numerical=True),
+    "zeppelin_model": partial(create_zeppelin_calculator, numerical=False),
 }
 
 
