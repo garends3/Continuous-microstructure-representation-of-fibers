@@ -69,7 +69,7 @@ class Trainer:
 
                 model_out = self.model(inputs)
 
-                output, *res = self.output_calculator.output_from_model_out(model_out, fiber_direction **kwargs)
+                output, *res = self.output_calculator.output_from_model_out(model_out, input_dirs, **kwargs)
                 loss = self.loss_fn(output, labels, *res)
 
                 loss.backward()
