@@ -16,8 +16,8 @@ class CoeffDiff:
     def __init__(self, diff_calculator: Any):
         self.diff_calculator = diff_calculator
 
-    def output_from_model_out(self, model_out: Any, **kwargs) -> tuple[Tensor, Tensor, Tensor]:
-        diff_signal = self.diff_calculator.compute_signal_from_coeff(model_out, **kwargs)
+    def output_from_model_out(self, model_out: Any, fiber_direction **kwargs) -> tuple[Tensor, Tensor, Tensor]:
+        diff_signal = self.diff_calculator.compute_signal_from_coeff(model_out, fiber_direction **kwargs)
         return diff_signal, model_out
 
 
@@ -28,7 +28,6 @@ def create_zeppelin_calculator(
         dataset.get_bvals(),
         dataset.get_directions(),
         dataset.get_bdelta(),
-        dataset.get_fiberdirection(),
         device=device
     )
     return CoeffDiff(diff_calculator)

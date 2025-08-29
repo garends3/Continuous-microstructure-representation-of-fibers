@@ -22,20 +22,19 @@ class Signal_Zeppelin:
         self.device = device
         self.bvals = torch.tensor(bvals, device=device)
         self.bdelta = torch.tensor(bdelta, device=device)
-        self.fiber_direction = torch.tensor(fiber_direction, device = device)
 
         if cart_bvec is not None:
             self.cart_bvec = cart_bvec
             self.sph_bvec = cartesian_to_spherical(cart_bvec)
 
 
-    def compute_signal_from_coeff(self, coeffs: torch.tensor):
+    def compute_signal_from_coeff(self, coeffs: torch.tensor, fiber_direction):
 
         weight = coeffs[:,0]
         Dpar = coeffs[:,1]
         Dperp = coeffs[:,2]
 
-        inproduct2 = torch.mm(self.sph_bvec, self.fiber_direction)
+        inproduct2 = torch.mm(self.sph_bvec, fiber_direction)
 
         signal = weight  * torch.exp(
                 ((Dpar - Dperp) * self.bvals * self.bdelta) / 3
