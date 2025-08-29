@@ -42,7 +42,7 @@ class Trainer:
 
         sphere = get_sphere('repulsion100')
         input_dirs = sphere.vertices[sphere.vertices[:,2]>=0]
-        input_dirs = torch.tensor(input_dirs, device=self.device)
+        self.input_dirs = torch.tensor(input_dirs, device=self.device)
 
         avg_loss = []
         t = 0
@@ -59,9 +59,9 @@ class Trainer:
             for i, (_input, labels, kwargs) in enumerate(tqdm(self.dataloader)):
                 self.model.train()
                 _input = _input.to(self.device)
-                inputs = torch.zeros(_input.shape[0], input_dirs.shape[0], 6)
+                inputs = torch.zeros((_input.shape[0], self.input_dirs.shape[0], 6), device=self.device)
                 inputs[..., :3] = _input[:, None, :]
-                inputs[..., 3:] = input_dirs[None, :, :]
+                inputs[..., 3:] = self.input_dirs[None, :, :]
                 inputs = inputs.reshape(-1, 6)
 
                 labels = labels.to(self.device)
@@ -69,7 +69,8 @@ class Trainer:
 
                 model_out = self.model(inputs)
 
-                output, *res = self.output_calculator.output_from_model_out(model_out, input_dirs, **kwargs)
+                output, *res = self.output_calculator.output_from_model_out(model_out, self.input_dirs, **kwargs)
+
                 loss = self.loss_fn(output, labels, *res)
 
                 loss.backward()
@@ -130,33 +131,24 @@ class Trainer:
         self.model.eval()
         with torch.no_grad():
             for _input, labels, kwargs in self.dataloader:
-                coeff_output = self.model(_input.to(self.device))
-                coeff_outputs.append(coeff_output.cpu().detach())
-                image_out, *_ = self.output_calculator.output_from_model_out(
-                    coeff_output, **kwargs
-                )
-                image_outputs.append(image_out.cpu().detach())
+                _input = _input.to(self.device)
+                inputs = torch.zeros((_input.shape[0], self.input_dirs.shape[0], 6), device=self.device)
+                inputs[..., :3] = _input[:, None, :]
+                inputs[..., 3:] = self.input_dirs[None, :, :]
+                inputs = inputs.reshape(-1, 6)
 
-        diff_image = torch.concat(image_outputs).numpy()
+                coeff_outputs.append(self.model(inputs).cpu().detach())
+
         coeffs = torch.concat(coeff_outputs).numpy()
 
         mask_path = cfg["paths"].get("mask", None)
         if mask_path:
             mask_img = nib.load(mask_path).get_fdata().astype(bool)
-            grad_pred_img = np.zeros_like(np_img)
-            grad_pred_img[mask_img, :] = diff_image*rescale_value
 
             coeff_image = np.zeros((width, height, depth, coeffs.shape[1]))
             coeff_image[mask_img, :] = coeffs
-            coeff_image[mask_img, -1] *= rescale_value
-        else:
-            grad_pred_img = diff_image.reshape(width, height, depth, -1) * rescale_value
-            coeff_image = coeffs.reshape(width, height, depth, -1)
-            coeff_image[..., -1] *=  rescale_value
 
         return (
             nifti_img,
-            grad_pred_img,
-            coeff_image[..., :-5],
-            coeff_image[..., -5:],
+            coeff_image,
         )

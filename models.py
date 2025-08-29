@@ -110,7 +110,7 @@ def create_zeppelin_model(cfg: dict, model: nn.Module) -> nn.Module:
 
 
 MODELS = {
-    "Zeppelin_model": partial(create_zeppelin_model, model=Zeppelin_NeSH),
+    "zeppelin_model": partial(create_zeppelin_model, model=Zeppelin_NeSH),
 }
 
 
