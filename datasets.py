@@ -90,7 +90,7 @@ class DiffusionDataset(Dataset):
         pass
 
 
-class StandardModelDataset(DiffusionDataset):
+class ZeppelinModelDataset(DiffusionDataset):
     def __init__(
         self,
         bvec_path: Path,
@@ -101,7 +101,6 @@ class StandardModelDataset(DiffusionDataset):
         mask_path: Path = None,
         scale: str | int | float = 1,
         val_size: int = 0,
-        numerical = False,
     ) -> None:
         nifti_file = nib.load(nifti_path)
         full_img = nifti_file.get_fdata()
@@ -112,11 +111,6 @@ class StandardModelDataset(DiffusionDataset):
         self.cart_bvecs = parse_bvecs_col(bvec_path)
         self.bdelta = parse_bvals_col(bdelta_path)
 
-        if not numerical:
-            self.bvals = self.bvals[self.bdelta >= 0]
-            self.cart_bvecs = self.cart_bvecs[self.bdelta >= 0]
-            full_img = full_img[..., self.bdelta >=0]
-            self.bdelta = self.bdelta[self.bdelta >= 0]
 
         voxel_wise_norm = False
 
@@ -188,13 +182,13 @@ class StandardModelDataset(DiffusionDataset):
 
     def get_directions(self) -> np.ndarray:
         return self.cart_bvecs
+    
+    
 
-
-
-def create_standard(cfg: dict, numerical: bool) -> StandardModelDataset:
+def create_zeppelin(cfg: dict) -> ZeppelinModelDataset:
     mask_path = Path(cfg["paths"]["mask"]) if cfg["paths"]["mask"] else None
 
-    dataset = StandardModelDataset(
+    dataset = ZeppelinModelDataset(
         bvec_path=Path(cfg["paths"].get("fsl_bvecs", None)),
         bval_path=Path(cfg["paths"].get("fsl_bvals", None)),
         bdelta_path=Path(cfg["paths"].get("fsl_bdelta", None)),
@@ -202,8 +196,7 @@ def create_standard(cfg: dict, numerical: bool) -> StandardModelDataset:
         nifti_path=Path(cfg["paths"]["nifti"]),
         mask_path=mask_path,
         scale=cfg["scale_data"],
-        val_size=cfg.get("val_size", 0),
-        numerical=numerical,
+        val_size=cfg.get("val_size", 0)
     )
 
     return dataset
@@ -212,8 +205,7 @@ def create_standard(cfg: dict, numerical: bool) -> StandardModelDataset:
 
 
 DATASETS = {
-    "standard": partial(create_standard, numerical=False),
-    "standard_num": partial(create_standard, numerical=True)
+    "zeppelin": partial(create_zeppelin)
 }
 
 
