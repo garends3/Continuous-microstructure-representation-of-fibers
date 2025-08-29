@@ -35,10 +35,9 @@ def progressive_emb(x_emb: torch.Tensor, t_frac: float) -> torch.Tensor:
     return x_emb * a.unsqueeze(dim=0)
 
 
-class SM_NeSH(nn.Module):
+class Zeppelin_NeSH(nn.Module):
     def __init__(
         self,
-        l_max=8,
         lpos=10,
         hidden_dim=256,
         n_layers=11,
@@ -47,7 +46,7 @@ class SM_NeSH(nn.Module):
     ) -> None:
         super().__init__()
 
-        output_size = (l_max + 1) * (l_max + 2) // 2 - 1
+        output_size = 3
         input_size = lpos * 2 if gaussian else lpos * 6 + 3
 
         self.mlp = nn.Sequential(
@@ -57,14 +56,11 @@ class SM_NeSH(nn.Module):
                 + [nn.Linear(hidden_dim, hidden_dim), nn.ReLU()]
             )
         )
-        self.fod_head = nn.Linear(hidden_dim, output_size)
-        self.intra_head = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
-        self.frac_head = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
-        self.de_head = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
-        self.dp_head = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
-        self.s0_head = nn.Sequential(
-            *[nn.Linear(hidden_dim, 1), nn.Softplus()]
-        )
+
+        self.weight = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
+        self.Dpar = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
+        self.Dperp = nn.Sequential(*[nn.Linear(hidden_dim, 1), nn.Sigmoid()])
+
 
         self.Lpos = lpos
         self.sigma = sigma
@@ -80,19 +76,12 @@ class SM_NeSH(nn.Module):
             x_emb = progressive_emb(x_emb, t_frac)
 
         x_mlp = self.mlp(x_emb)
-        p00 = (torch.ones((x.shape[0], 1)) / torch.sqrt(torch.tensor(torch.pi * 4))).to(
-            x.device
-        )
 
         return torch.cat(
             [
-                p00,
-                self.fod_head(x_mlp),
-                self.intra_head(x_mlp) * 4 + 0,
-                self.frac_head(x_mlp),
-                self.de_head(x_mlp) * 4,
-                self.dp_head(x_mlp) * 1.5,
-                self.s0_head(x_mlp),
+                self.weight(x_mlp),
+                self.Dpar(x_mlp) * 4 + 0,
+                self.Dperp(x_mlp) * 4 + 0
             ],
             dim=-1,
         )
@@ -104,10 +93,8 @@ def create_std_model(cfg: dict, model: nn.Module) -> nn.Module:
     lpos = train_cfg["lpos"]
     hidden_dim = train_cfg["hidden_dim"]
     n_layers = train_cfg["n_layers"]
-    l_max = train_cfg["lmax"]
 
     return model(
-        l_max=l_max,
         lpos=lpos,
         hidden_dim=hidden_dim,
         n_layers=n_layers,
@@ -117,7 +104,7 @@ def create_std_model(cfg: dict, model: nn.Module) -> nn.Module:
 
 
 MODELS = {
-    "standard_model": partial(create_std_model, model=SM_NeSH),
+    "Zeppelin_model": partial(create_std_model, model=Zeppelin_NeSH),
 }
 
 
