@@ -1,13 +1,13 @@
 experiment_name: test # Name of the experiment, used for saving files
 
-model_name: standard_model # Only option in this repository (for (MSMT-)CSD see https://github.com/tomhend/MSMT-CSD_INR)
-output_calculator: standard_model # Choose from: standard_model, standard_model_num, grad_cor_num
+model_name: zeppelin_model # Only option in this repository (for (MSMT-)CSD see https://github.com/tomhend/MSMT-CSD_INR)
+output_calculator: zeppelin_model # Choose from: standard_model, standard_model_num, grad_cor_num
 loss_function_name: mselossavgl2 # Choose from: mselossavgl2, lossavgl1, ricianlogloss (requires s_noise parameter)
 # s_noise: 0 # Only used for ricianlogloss, can be removed for mse loss
 
 gaussian_encoding: True # Deprecated, keep on true
 fod_rescale: True # Deprecated, keep on true
-dataset_name: standard # Should correspond with output_calculator: standard, standard_num, grad_cor_num
+dataset_name: zeppelin_model # Should correspond with output_calculator: zeppelin
 bval_delta: 0.1 # define margins on b-values
 
 scale_data: norm # Leave on norm for now (normalization based on 95th percentile of b0)
@@ -34,7 +34,7 @@ paths:
   output: # output folder, is created in the process
 
 train_cfg:
-  lmax: 2 # SH order of the output fod
+  nr_fiber_directions: 50 # SH order of the output fod
   lpos: 5000 # Number of positional encodings (/2)
   n_layers: 4 # Number of layers in the network
   hidden_dim: 2048 # Size of hidden dims

@@ -27,7 +27,7 @@ def initialize_run(cfg_path = None):
     height = cfg["height"]
     depth = cfg["depth"]
 
-    l_max = train_cfg["lmax"]
+    nr_fiber_directions = cfg["nr_fiber_directions"]
     lr = train_cfg["lr"]
     lambda_ = train_cfg["lambda"]
     log_freq = cfg["log_freq"]
@@ -64,7 +64,7 @@ def initialize_run(cfg_path = None):
         optimizer=optimizer,
         device=device,
         epochs=epochs,
-        l_max=l_max,
+        nr_fiber_directions,
         data_shape=(width, height, depth),
         output_calculator=output_calculator,
         log_freq=log_freq,

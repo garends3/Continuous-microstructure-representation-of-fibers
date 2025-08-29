@@ -21,7 +21,7 @@ class Trainer:
     optimizer: torch.optim.Optimizer
     device: str
     epochs: int
-    l_max: int
+    nr_fiber_directions: int
     data_shape: tuple[int, int, int]
     output_calculator: OutputCalculator
 
