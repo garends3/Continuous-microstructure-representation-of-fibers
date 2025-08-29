@@ -47,7 +47,7 @@ class Zeppelin_NeSH(nn.Module):
         super().__init__()
 
         output_size = 3
-        input_size = lpos * 2 if gaussian else lpos * 6 + 3
+        input_size = lpos * 4 if gaussian else lpos * 6 + 3
 
         self.mlp = nn.Sequential(
             *(
@@ -65,10 +65,16 @@ class Zeppelin_NeSH(nn.Module):
         self.Lpos = lpos
         self.sigma = sigma
         self.B = nn.Parameter(torch.randn([lpos, 3]) * sigma, requires_grad=False) if gaussian else None
+        self.A = nn.Parameter(torch.randn([lpos, 3]) * sigma, requires_grad=False) if gaussian else None
+
 
     def forward(self, x, t_frac=None) -> torch.Tensor:
         if self.B is not None:
-            x_emb = input_mapping(x, self.B.to(x.device))
+            if self.A is not None:
+                x_emb = torch.cat([input_mapping(x[:,:3], self.B.to(x.device)),
+                                   input_mapping(x[:,3:], self.A.to(x.device))], dim=-1)
+            else:
+                x_emb = input_mapping(x[:, :3], self.B.to(x.device))
         else:
             x_emb = positional_encoding(x, self.Lpos, self.sigma)
 
