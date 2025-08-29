@@ -87,7 +87,7 @@ class Zeppelin_NeSH(nn.Module):
         )
 
 
-def create_std_model(cfg: dict, model: nn.Module) -> nn.Module:
+def create_zeppelin_model(cfg: dict, model: nn.Module) -> nn.Module:
     train_cfg = cfg["train_cfg"]
     sigma = train_cfg["sigma"]
     lpos = train_cfg["lpos"]
@@ -104,7 +104,7 @@ def create_std_model(cfg: dict, model: nn.Module) -> nn.Module:
 
 
 MODELS = {
-    "Zeppelin_model": partial(create_std_model, model=Zeppelin_NeSH),
+    "Zeppelin_model": partial(create_zeppelin_model, model=Zeppelin_NeSH),
 }
 
 
