@@ -84,12 +84,18 @@ def initialize_run(cfg_path = None):
     (
         nifti_img,
         coeff_image,
+        diff_image,
     ) = trainer.create_full_output_image(cfg, dataset.get_scale())
 
     full_coeff_img = nib.Nifti1Image(
         coeff_image, affine=nifti_img.affine, header=nifti_img.header
     )
     nib.save(full_coeff_img, output_folder / f"coeffs_{file_inf}.nii.gz")
+
+    full_diff_img = nib.Nifti1Image(
+        diff_image, affine=nifti_img.affine, header=nifti_img.header
+    )
+    nib.save(full_diff_img, output_folder / f"dwi_{file_inf}.nii.gz")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

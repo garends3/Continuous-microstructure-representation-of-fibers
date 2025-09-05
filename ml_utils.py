@@ -136,10 +136,16 @@ class Trainer:
                 inputs[..., :3] = _input[:, None, :]
                 inputs[..., 3:] = self.input_dirs[None, :, :]
                 inputs = inputs.reshape(-1, 6)
+                model_out = self.model(inputs)
+                coeff_outputs.append(model_out.cpu().detach())
 
-                coeff_outputs.append(self.model(inputs).cpu().detach())
+                output, *res = self.output_calculator.output_from_model_out(model_out, self.input_dirs, **kwargs)
+                image_outputs.append(output.cpu().detach())
 
         coeffs = torch.concat(coeff_outputs).numpy()
+        coeffs = coeffs.reshape(-1, self.input_dirs.shape[0]*3)
+
+        diff_output = torch.concat(image_outputs).numpy()
 
         mask_path = cfg["paths"].get("mask", None)
         if mask_path:
@@ -148,7 +154,11 @@ class Trainer:
             coeff_image = np.zeros((width, height, depth, coeffs.shape[1]))
             coeff_image[mask_img, :] = coeffs
 
+            diff_image = np.zeros_like(np_img)
+            diff_image[mask_img, :] = diff_output
+
         return (
             nifti_img,
             coeff_image,
+            diff_image
         )

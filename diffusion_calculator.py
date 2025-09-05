@@ -33,9 +33,9 @@ class Signal_Zeppelin:
         Dperp = coeffs[:,2]
 
         inproduct2 = torch.mm(self.sph_bvec, fiber_direction.T)
-        Dpar = Dpar.reshape(50, 50, 1)
-        Dperp = Dperp.reshape(50, 50, 1)
-        weight = weight.reshape(50, 50, 1)
+        Dpar = Dpar.reshape(-1, fiber_direction.shape[0], 1)
+        Dperp = Dperp.reshape(-1, fiber_direction.shape[0], 1)
+        weight = weight.reshape(-1, fiber_direction.shape[0], 1)
 
         signal = weight  * torch.exp(
                 ((Dpar - Dperp) * self.bvals * self.bdelta) / 3
