@@ -23,7 +23,7 @@ class Signal_Zeppelin:
         self.bdelta = torch.tensor(bdelta, device=device)
 
         if cart_bvec is not None:
-            self.cart_bvec = cart_bvec
+            self.cart_bvec = torch.tensor(cart_bvec, device=device)
             self.sph_bvec = torch.tensor(cartesian_to_spherical(cart_bvec), device=device)
 
 
@@ -32,7 +32,7 @@ class Signal_Zeppelin:
         Dpar = coeffs[:,1]
         Dperp = coeffs[:,2]
 
-        inproduct2 = torch.mm(self.sph_bvec, fiber_direction.T)
+        inproduct2 = torch.mm(self.cart_bvec, fiber_direction.T)**2
         Dpar = Dpar.reshape(-1, fiber_direction.shape[0], 1)
         Dperp = Dperp.reshape(-1, fiber_direction.shape[0], 1)
         weight = weight.reshape(-1, fiber_direction.shape[0], 1)
