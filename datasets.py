@@ -111,7 +111,6 @@ class ZeppelinModelDataset(DiffusionDataset):
         self.cart_bvecs = parse_bvecs_col(bvec_path)
         self.bdelta = parse_bvals_col(bdelta_path)
 
-
         voxel_wise_norm = False
 
         if isinstance(scale, int) or isinstance(scale, float):

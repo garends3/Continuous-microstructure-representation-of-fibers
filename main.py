@@ -27,7 +27,7 @@ def initialize_run(cfg_path = None):
     height = cfg["height"]
     depth = cfg["depth"]
 
-    nr_fiber_directions = cfg["nr_fiber_directions"]
+    nr_fiber_directions = train_cfg["nr_fiber_directions"]
     lr = train_cfg["lr"]
     lambda_ = train_cfg["lambda"]
     log_freq = cfg["log_freq"]
@@ -64,7 +64,7 @@ def initialize_run(cfg_path = None):
         optimizer=optimizer,
         device=device,
         epochs=epochs,
-        nr_fiber_directions,
+        nr_fiber_directions=nr_fiber_directions,
         data_shape=(width, height, depth),
         output_calculator=output_calculator,
         log_freq=log_freq,
@@ -83,25 +83,19 @@ def initialize_run(cfg_path = None):
     torch.save(best_model, output_folder / f"model_{file_inf}.pt")
     (
         nifti_img,
-        grad_img,
         coeff_image,
-        sm_coeff,
+        diff_image,
     ) = trainer.create_full_output_image(cfg, dataset.get_scale())
-
-    sm_coeff_img = nib.Nifti1Image(
-        sm_coeff, affine=nifti_img.affine, header=nifti_img.header
-    )
-    nib.save(sm_coeff_img, output_folder / f"sm_coeffs_{file_inf}.nii.gz")
-
-    full_nifti_img = nib.Nifti1Image(
-        grad_img, affine=nifti_img.affine, header=nifti_img.header
-    )
-    nib.save(full_nifti_img, output_folder / f"grads_{file_inf}.nii.gz")
 
     full_coeff_img = nib.Nifti1Image(
         coeff_image, affine=nifti_img.affine, header=nifti_img.header
     )
     nib.save(full_coeff_img, output_folder / f"coeffs_{file_inf}.nii.gz")
+
+    full_diff_img = nib.Nifti1Image(
+        diff_image, affine=nifti_img.affine, header=nifti_img.header
+    )
+    nib.save(full_diff_img, output_folder / f"dwi_{file_inf}.nii.gz")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

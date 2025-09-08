@@ -3,6 +3,7 @@ configs/debug
 notebooks/
 wandb/
 paper_output/
+outputs/
 .idea/
 **/.DS_store
 smi.py

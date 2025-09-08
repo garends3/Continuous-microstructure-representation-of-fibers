@@ -31,6 +31,17 @@ def avg_mse_l2_loss(
     return loss
 
 
+def avg_mse_l2_loss_unreg(
+    output: torch.Tensor,
+    labels: torch.Tensor,
+    coeffs: torch.Tensor,
+    *args,
+    **kwargs
+) -> torch.Tensor:
+    loss = ((output - labels) ** 2).sum(dim=1).mean()
+    return loss
+
+
 def rician_log_loss(
         output: torch.Tensor,
         labels: torch.Tensor,
@@ -69,6 +80,10 @@ def create_avg_mse_l2(cfg: dict, *args, **kwargs) -> Callable:
     return partial(avg_mse_l2_loss, _lambda=_lambda)
 
 
+def create_avg_mse_l2_loss_unreg(cfg: dict, *args, **kwargs) -> Callable:
+    return avg_mse_l2_loss_unreg
+
+
 def create_rician_log_loss(cfg: dict, *args, **kwargs) -> Callable:
     _lambda = torch.tensor(cfg["train_cfg"]["lambda"], dtype=torch.float)
     s_noise = torch.tensor(cfg["s_noise"], dtype=torch.float)
@@ -77,6 +92,7 @@ def create_rician_log_loss(cfg: dict, *args, **kwargs) -> Callable:
 
 LOSS_FUNCTIONS = {
     "mselossavgl2": create_avg_mse_l2,
+    "mselossunregl2": create_avg_mse_l2_loss_unreg,
     "lossavgl1": create_avg_l1,
     "ricianlogloss": create_rician_log_loss,
 }

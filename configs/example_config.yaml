@@ -2,12 +2,12 @@ experiment_name: test # Name of the experiment, used for saving files
 
 model_name: zeppelin_model # Only option in this repository (for (MSMT-)CSD see https://github.com/tomhend/MSMT-CSD_INR)
 output_calculator: zeppelin_model # Choose from: standard_model, standard_model_num, grad_cor_num
-loss_function_name: mselossavgl2 # Choose from: mselossavgl2, lossavgl1, ricianlogloss (requires s_noise parameter)
+loss_function_name: mselossunregl2 # Choose from: mselossavgl2, lossavgl1, ricianlogloss (requires s_noise parameter)
 # s_noise: 0 # Only used for ricianlogloss, can be removed for mse loss
 
 gaussian_encoding: True # Deprecated, keep on true
 fod_rescale: True # Deprecated, keep on true
-dataset_name: zeppelin_model # Should correspond with output_calculator: zeppelin
+dataset_name: zeppelin # Should correspond with output_calculator: zeppelin
 bval_delta: 0.1 # define margins on b-values
 
 scale_data: norm # Leave on norm for now (normalization based on 95th percentile of b0)
@@ -23,15 +23,15 @@ depth:  # Depth of input image
 log_freq: 0 # Passed to the trainer, useful if you want to implement your own logging system.
 
 paths:
-  nifti: # input nifti
-  mask: # White matter mask
-  fsl_bvecs: # bvec file, expected in x,y,z per line
-  fsl_bvals: # bval file, expected in one value per line
-  fsl_bdelta: # bdelta file, expected in one value per line
+  nifti: data/recon_signal_lmax2_Gaussian_SNR50.nii.gz # input nifti
+  mask: data/wm_mask_011.nii.gz # White matter mask
+  fsl_bvecs: data/bvecs_grad_prisma_new.bvec # bvec file, expected in x,y,z per line
+  fsl_bvals: data/bvecs_grad_prisma_new.bval # bval file, expected in one value per line
+  fsl_bdelta: data/bvecs_grad_prisma_new.bdelta # bdelta file, expected in one value per line
   # c_bvecs: .npy with corrected bvecs for gradient correction, expected shape (W, H, D, N_dir, 3)
   # c_bvals: .npy with corrected bvals for gradient correction, expected shape (W, H, D, N_dir)
   # c_bdelta: .npy with corrected bdeltas for gradient correction, expected shape (W, H, D, N_dir)
-  output: # output folder, is created in the process
+  output: outputs/ # output folder, is created in the process
 
 train_cfg:
   nr_fiber_directions: 50 # SH order of the output fod
@@ -39,7 +39,7 @@ train_cfg:
   n_layers: 4 # Number of layers in the network
   hidden_dim: 2048 # Size of hidden dims
   lr: 0.0001 # Learning rate
-  epochs: 150 # Number of epochs
-  batch_size: 500 # Batch size
+  epochs: 10 # Number of epochs
+  batch_size: 100 # Batch size
   lambda: 5 # Strength of non-negativity constraint on FODs, 0 for no non-negativity constraint
   sigma: 3.5 # Variance of the normal distribution where the encoding frequencies are sampled from

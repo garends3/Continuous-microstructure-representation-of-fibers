@@ -38,7 +38,7 @@ class Signal_Zeppelin:
 
         signal = weight  * torch.exp(
                 ((Dpar - Dperp) * self.bvals * self.bdelta) / 3
-                - ((2 * Dpar + Dperp) * self.bvals) / 3
+                - ((Dpar + 2 * Dperp) * self.bvals) / 3
                 - ((Dpar - Dperp) * self.bvals * self.bdelta * inproduct2)
                     )
 
