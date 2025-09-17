@@ -38,7 +38,7 @@ def avg_mse_l2_loss_unreg(
     *args,
     **kwargs
 ) -> torch.Tensor:
-    loss = ((output - labels) ** 2).sum(dim=1).mean()
+    loss = ((output - labels) ** 2).mean()
     return loss
 
 

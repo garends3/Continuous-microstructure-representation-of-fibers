@@ -38,8 +38,8 @@ train_cfg:
   lpos: 5000 # Number of positional encodings (/2)
   n_layers: 4 # Number of layers in the network
   hidden_dim: 2048 # Size of hidden dims
-  lr: 0.0001 # Learning rate
-  epochs: 10 # Number of epochs
+  lr: 0.00001 # Learning rate
+  epochs: 100 # Number of epochs
   batch_size: 100 # Batch size
   lambda: 5 # Strength of non-negativity constraint on FODs, 0 for no non-negativity constraint
   sigma: 3.5 # Variance of the normal distribution where the encoding frequencies are sampled from
